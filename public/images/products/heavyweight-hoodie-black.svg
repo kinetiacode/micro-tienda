@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img" aria-label="Heavyweight Hoodie - Black">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6F6F7"/><stop offset="1" stop-color="#D9D9DE"/></linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#27272A"/><stop offset=".5" stop-color="#454550"/><stop offset="1" stop-color="#27272A"/></linearGradient>
+    <pattern id="mesh" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="#fff" opacity=".38"/></pattern>
+  </defs>
+  <rect width="600" height="750" fill="url(#bg)"/>
+  <ellipse cx="300" cy="655" rx="200" ry="22" fill="#000" opacity=".13"/>
+  <g transform="translate(0,60)">
+    <path d="M185 215 Q235 190 258 182 Q300 225 342 182 Q365 190 415 215 L488 350 L432 392 L415 352 L415 560 L185 560 L185 352 L168 392 L112 350 Z" fill="url(#g)" stroke="#101012" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M240 190 Q230 100 300 96 Q370 100 360 190 Q300 245 240 190 Z" fill="url(#g)" stroke="#101012" stroke-width="3"/>
+    <path d="M263 186 Q258 128 300 126 Q342 128 337 186 Q300 220 263 186 Z" fill="#101012"/>
+    <rect x="185" y="530" width="230" height="30" fill="#101012" opacity=".5"/>
+    <path d="M112 350 L168 392 L156 414 L98 372 Z" fill="#101012" opacity=".5"/>
+    <path d="M488 350 L432 392 L444 414 L502 372 Z" fill="#101012" opacity=".5"/>
+    <path d="M228 440 L372 440 L392 520 L208 520 Z" fill="none" stroke="#101012" stroke-width="3" opacity=".6"/>
+    <path d="M283 222 L279 312 M317 222 L321 312" stroke="#454550" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="279" cy="316" r="5" fill="#101012"/><circle cx="321" cy="316" r="5" fill="#101012"/>
+    <text x="300" y="395" text-anchor="middle" font-size="26" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="3" fill="#fff" opacity=".9">KINETIA</text>
+  </g>
+</svg>

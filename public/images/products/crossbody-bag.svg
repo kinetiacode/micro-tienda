@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img" aria-label="Crossbody Bag">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6F6F7"/><stop offset="1" stop-color="#D9D9DE"/></linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#27272A"/><stop offset=".5" stop-color="#454550"/><stop offset="1" stop-color="#27272A"/></linearGradient>
+    <pattern id="mesh" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="#fff" opacity=".38"/></pattern>
+  </defs>
+  <rect width="600" height="750" fill="url(#bg)"/>
+  <ellipse cx="300" cy="655" rx="200" ry="22" fill="#000" opacity=".13"/>
+  <g transform="translate(0,40)">
+    <path d="M205 345 Q300 105 395 345" fill="none" stroke="#101012" stroke-width="22" stroke-linecap="round"/>
+    <path d="M205 345 Q300 105 395 345" fill="none" stroke="#454550" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+    <rect x="140" y="330" width="320" height="250" rx="36" fill="url(#g)" stroke="#101012" stroke-width="3"/>
+    <path d="M140 368 Q140 330 178 330 H422 Q460 330 460 368 V424 Q300 474 140 424 Z" fill="#454550" opacity=".5" stroke="#101012" stroke-width="3"/>
+    <path d="M168 522 H432" stroke="#101012" stroke-width="5" stroke-dasharray="5 4"/>
+    <rect x="282" y="442" width="36" height="34" rx="6" fill="#A1A1AA" stroke="#52525B" stroke-width="3"/>
+    <text x="300" y="560" text-anchor="middle" font-size="18" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="4" fill="#fff" opacity=".85">KINETIA</text>
+  </g>
+</svg>

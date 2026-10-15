@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img" aria-label="Street Graphic Tee - Gray">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6F6F7"/><stop offset="1" stop-color="#D9D9DE"/></linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#71717A"/><stop offset=".5" stop-color="#A1A1AA"/><stop offset="1" stop-color="#71717A"/></linearGradient>
+    <pattern id="mesh" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="#fff" opacity=".38"/></pattern>
+  </defs>
+  <rect width="600" height="750" fill="url(#bg)"/>
+  <ellipse cx="300" cy="655" rx="200" ry="22" fill="#000" opacity=".13"/>
+  <g transform="translate(0,75)">
+    <path d="M205 190 L262 168 Q300 205 338 168 L395 190 L490 290 L432 340 L418 312 L418 548 L182 548 L182 312 L168 340 L110 290 Z" fill="url(#g)" stroke="#4B4B53" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M262 168 Q300 216 338 168" fill="none" stroke="#4B4B53" stroke-width="12" stroke-linecap="round"/>
+    <path d="M200 528 H400" stroke="#4B4B53" stroke-width="3" opacity=".45"/>
+    <path d="M245 330 Q256 450 240 518" fill="none" stroke="#4B4B53" stroke-width="3" opacity=".25"/>
+    <path d="M355 330 Q344 450 360 518" fill="none" stroke="#4B4B53" stroke-width="3" opacity=".25"/>
+    <circle cx="300" cy="390" r="56" fill="none" stroke="#fff" stroke-width="6" opacity=".92"/>
+    <text x="300" y="388" text-anchor="middle" font-size="22" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="2" fill="#fff">STREET</text>
+    <text x="300" y="412" text-anchor="middle" font-size="13" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="5" fill="#fff">CULTURE</text>
+  </g>
+</svg>

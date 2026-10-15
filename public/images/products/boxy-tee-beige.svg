@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" role="img" aria-label="Boxy Tee - Beige">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6F6F7"/><stop offset="1" stop-color="#D9D9DE"/></linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D6C7A8"/><stop offset=".5" stop-color="#EADFC8"/><stop offset="1" stop-color="#D6C7A8"/></linearGradient>
+    <pattern id="mesh" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="#fff" opacity=".38"/></pattern>
+  </defs>
+  <rect width="600" height="750" fill="url(#bg)"/>
+  <ellipse cx="300" cy="655" rx="200" ry="22" fill="#000" opacity=".13"/>
+  <g transform="translate(0,70)">
+    <path d="M190 230 L255 205 Q300 242 345 205 L410 230 L482 302 L430 348 L410 322 L410 545 L190 545 L190 322 L170 348 L118 302 Z" fill="url(#g)" stroke="#A8956F" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M255 205 Q300 253 345 205" fill="none" stroke="#A8956F" stroke-width="12" stroke-linecap="round"/>
+    <path d="M200 525 H400" stroke="#A8956F" stroke-width="3" opacity=".45"/>
+    <path d="M245 330 Q256 450 240 515" fill="none" stroke="#A8956F" stroke-width="3" opacity=".25"/>
+    <path d="M355 330 Q344 450 360 515" fill="none" stroke="#A8956F" stroke-width="3" opacity=".25"/>
+    <text x="300" y="330" text-anchor="middle" font-size="22" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="5" fill="#A8956F">KINETIA</text>
+  </g>
+</svg>
