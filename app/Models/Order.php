@@ -13,6 +13,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Order extends Model
 {
     /**
+     * Estados posibles de un pedido, en orden de avance (cancelled es terminal).
+     *
+     * @var array<int, string>
+     */
+    public const STATUSES = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'];
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

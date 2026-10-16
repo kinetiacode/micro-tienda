@@ -1,17 +1,19 @@
 /**
- * FOOTER: pie de página con marca, contacto y redes.
+ * FOOTER: pie de página con marca, contacto, redes y el crédito de quien hizo el sitio.
  * Los datos de WhatsApp e Instagram vienen de Laravel (info) para no escribirlos dos veces.
  */
 import { useStore } from '@/Context/StoreContext';
+import { useStoreName } from '@/lib/brand';
 
 export default function Footer() {
     const { info } = useStore();
+    const name = useStoreName();
 
     return (
         <footer className="mt-16 border-t border-zinc-200 bg-white pb-24">
             <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:grid-cols-3">
                 <div>
-                    <p className="font-display text-xl font-extrabold tracking-tight">KINETIA</p>
+                    <p className="font-display text-xl font-extrabold tracking-tight">{name.toUpperCase()}</p>
                     <p className="mt-2 text-sm text-zinc-600">Streetwear hecho para moverse. Drops limitados.</p>
                 </div>
 
@@ -37,9 +39,17 @@ export default function Footer() {
                 </div>
             </div>
 
-            {/* new Date().getFullYear() pone el año actual solo. */}
+            {/* Crédito de Kinetia Code, igual que en cierra-reservas. */}
             <p className="border-t border-zinc-100 py-4 text-center text-xs text-zinc-500">
-                © {new Date().getFullYear()} KINETIA Streetwear. Todos los derechos reservados.
+                Sitio hecho por{' '}
+                <a
+                    href="https://instagram.com/kinetiacode"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-zinc-900 hover:underline"
+                >
+                    Kinetia Code
+                </a>
             </p>
         </footer>
     );

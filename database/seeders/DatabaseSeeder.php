@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         Setting::create([
+            'store_name' => config('store.name'),
             'exchange_rate_bs' => 45.50,
             'free_shipping_threshold_usd' => 30.00,
             'flat_shipping_cost_usd' => 3.00,

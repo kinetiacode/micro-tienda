@@ -10,20 +10,67 @@ import type { Currency } from '@/Types/store';
  * Ejemplo: formatPrice(18, 'USD', 45.5) -> "$18.00"
  *          formatPrice(18, 'BS', 45.5)  -> "Bs. 819,00"
  */
-export const formatPrice = (amountUsd: number, currency: Currency, exchangeRate: number): string => {
+export const formatPrice = (amountUsd: number, currency: Currency, exchangeRate: number): string =>
+    // Para bolívares: dólares x tasa del día.
+    formatMoney(currency === 'USD' ? amountUsd : amountUsd * exchangeRate, currency);
+
+/**
+ * Da formato a un monto que YA está en la moneda indicada (sin convertir).
+ * Se usa también para los números animados, que pasan por valores intermedios.
+ */
+export const formatMoney = (amount: number, currency: Currency): string => {
     if (currency === 'USD') {
         // toFixed(2) = siempre 2 decimales.
-        return `$${amountUsd.toFixed(2)}`;
+        return `$${amount.toFixed(2)}`;
     }
 
-    // Para bolívares: dólares x tasa del día.
-    const amountBs = amountUsd * exchangeRate;
-
     // toLocaleString con 'es-VE' pone el formato venezolano (punto para miles, coma para decimales).
-    return `Bs. ${amountBs.toLocaleString('es-VE', {
+    return `Bs. ${amount.toLocaleString('es-VE', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })}`;
+};
+
+/** Texto corto para la fecha de la tasa: "hoy", "ayer" o "14 oct". Vacío si no hay fecha. */
+export const rateDateLabel = (iso: string | null): string => {
+    if (!iso) {
+        return '';
+    }
+
+    const date = new Date(iso);
+    const today = new Date();
+    const yesterday = new Date();
+
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+        return 'hoy';
+    }
+
+    if (date.toDateString() === yesterday.toDateString()) {
+        return 'ayer';
+    }
+
+    return date.toLocaleDateString('es-VE', { day: 'numeric', month: 'short' }).replace('.', '');
+};
+
+/** "hace 5 min", "hace 2 h"... para mostrar cuándo se creó un pedido. */
+export const timeAgo = (iso: string): string => {
+    const seconds = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+
+    if (seconds < 60) {
+        return 'hace un momento';
+    }
+
+    if (seconds < 3600) {
+        return `hace ${Math.floor(seconds / 60)} min`;
+    }
+
+    if (seconds < 86400) {
+        return `hace ${Math.floor(seconds / 3600)} h`;
+    }
+
+    return `hace ${Math.floor(seconds / 86400)} d`;
 };
 
 /**
@@ -58,8 +105,15 @@ export const PAYMENT_DETAILS = {
     zelle: {
         label: 'Zelle',
         lines: [
-            { label: 'Correo', value: 'pagos@kinetia.example' },
-            { label: 'Titular', value: 'Kinetia Streetwear C.A.' },
+            { label: 'Correo', value: 'pagos@jadestore.example' },
+            { label: 'Titular', value: 'Jade Store C.A.' },
+        ],
+    },
+    binance: {
+        label: 'Binance Pay (USDT)',
+        lines: [
+            { label: 'Binance Pay ID', value: '123456789' },
+            { label: 'Usuario', value: 'JadeStore' },
         ],
     },
     efectivo: {

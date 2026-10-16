@@ -2,16 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrderController extends Controller
 {
+    /**
+     * Seguimiento público de un pedido (se abre con el QR o el enlace del ticket).
+     */
+    public function show(Order $order): Response
+    {
+        return Inertia::render('OrderTracking', [
+            'order' => OrderResource::make($order->load('items.variant.product'))->resolve(),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -19,7 +33,7 @@ class OrderController extends Controller
             'customer_phone' => ['required', 'string', 'max:30'],
             'delivery_type' => ['required', 'in:pickup,delivery'],
             'delivery_address' => ['required_if:delivery_type,delivery', 'nullable', 'string', 'max:255'],
-            'payment_method' => ['required', 'in:pago_movil,zelle,efectivo'],
+            'payment_method' => ['required', 'in:pago_movil,zelle,binance,efectivo'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.variantId' => ['required', 'integer', 'exists:product_variants,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:20'],
@@ -50,7 +64,7 @@ class OrderController extends Controller
                 : 0;
 
             $order = Order::create([
-                'order_number' => 'ORD-'.random_int(100000, 999999),
+                'order_number' => $this->generateOrderNumber(),
                 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'],
                 'delivery_type' => $data['delivery_type'],
@@ -60,6 +74,7 @@ class OrderController extends Controller
                 'shipping_usd' => $shippingUsd,
                 'exchange_rate_snapshot' => $settings->exchange_rate_bs,
                 'total_usd' => $subtotalUsd + $shippingUsd,
+                'status' => 'pending',
             ]);
 
             foreach ($lines as [$variant, $quantity]) {
@@ -70,19 +85,41 @@ class OrderController extends Controller
                 ]);
             }
 
+            $trackingUrl = route('orders.show', $order);
+
             return response()->json([
-                'order_number' => $order->order_number,
-                'whatsapp_url' => $this->buildWhatsappUrl($order, $lines, $settings),
+                'order' => OrderResource::make($order->load('items.variant.product'))->resolve(),
+                'tracking_url' => $trackingUrl,
+                'whatsapp_url' => $this->buildWhatsappUrl($order, $lines, $settings, $trackingUrl),
             ]);
         });
     }
 
     /**
+     * Código corto y fácil de dictar: KIN- + 6 caracteres sin letras confusas (sin 0/O ni 1/I).
+     */
+    private function generateOrderNumber(): string
+    {
+        do {
+            $code = 'KIN-'.collect(range(1, 6))
+                ->map(fn () => Str::of('ABCDEFGHJKLMNPQRSTUVWXYZ23456789')->charAt(random_int(0, 31)))
+                ->implode('');
+        } while (Order::where('order_number', $code)->exists());
+
+        return $code;
+    }
+
+    /**
      * @param  array<int, array{0: ProductVariant, 1: int}>  $lines
      */
-    private function buildWhatsappUrl(Order $order, array $lines, Setting $settings): string
+    private function buildWhatsappUrl(Order $order, array $lines, Setting $settings, string $trackingUrl): string
     {
-        $payment = ['pago_movil' => 'Pago Móvil', 'zelle' => 'Zelle', 'efectivo' => 'Efectivo'][$order->payment_method];
+        $payment = [
+            'pago_movil' => 'Pago Móvil',
+            'zelle' => 'Zelle',
+            'binance' => 'Binance Pay (USDT)',
+            'efectivo' => 'Efectivo',
+        ][$order->payment_method];
         $rate = $order->exchange_rate_snapshot;
         $bs = fn (float $usd): string => 'Bs. '.number_format($usd * $rate, 2, ',', '.');
 
@@ -99,6 +136,7 @@ class OrderController extends Controller
         $text .= "\n\n👤 {$order->customer_name} · {$order->customer_phone}";
         $text .= "\n🚚 ".($order->delivery_type === 'delivery' ? "Delivery: {$order->delivery_address}" : 'Pick-up');
         $text .= "\n💳 {$payment}";
+        $text .= "\n🔎 Seguimiento: {$trackingUrl}";
 
         return 'https://wa.me/'.$settings->whatsapp_number.'?text='.rawurlencode($text);
     }

@@ -38,7 +38,7 @@ export default function PromoBanner() {
             : `${pad(Math.floor(seconds / 3600))}:${pad(Math.floor((seconds % 3600) / 60))}:${pad(seconds % 60)}`;
 
     return (
-        <div className="bg-zinc-950 px-4 py-2 text-center text-xs font-medium text-white">
+        <div className="bg-black px-4 py-2 text-center text-xs font-medium text-on-accent">
             🔥 Drop del día: delivery gratis en compras grandes · termina en{' '}
             {/* tabular-nums hace que los dígitos tengan el mismo ancho y el reloj no "baile". */}
             <span className="font-display tabular-nums text-emerald-400">{countdown}</span>

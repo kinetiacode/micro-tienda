@@ -5,14 +5,17 @@
  * El producto ya trae sus variantes (tallas + color + stock) desde Laravel:
  *   product.variants = [{ size: 'S', color_name: 'Negro', color_hex: '#18181B', stock: 5 }, ...]
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Price from '@/Components/Price';
 import ProductDetailModal from '@/Components/ProductDetailModal';
 import { useStore } from '@/Context/StoreContext';
 import type { Product } from '@/Types/store';
 
 export default function ProductCard({ product }: { product: Product }) {
-    // Del cuaderno: formatear precios, agregar al carrito y ver qué hay ya en el carrito.
-    const { format, addToCart, cart } = useStore();
+    // Del cuaderno: agregar al carrito, ver qué hay ya en el carrito y la talla elegida en "Mi talla".
+    const { addToCart, cart, mySizeFor } = useStore();
+    // La talla de "Mi talla" que corresponde a ESTE producto (null si es talla única o no eligió).
+    const mySize = mySizeFor(product);
 
     // Lista de colores SIN repetir, sacada de las variantes: [['Negro', '#18181B'], ...]
     // Un Map usa el nombre como llave, así un color repetido se sobrescribe en vez de duplicarse.
@@ -42,12 +45,28 @@ export default function ProductCard({ product }: { product: Product }) {
     const canAdd = selected !== null && selected.stock > inCart;
     // Stock total del producto: si es 0, se muestra "Agotado".
     const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+    // La variante de MI talla dentro del color actual (para avisar si hay o se agotó).
+    const mineVariant = mySize ? variants.find((variant) => variant.size === mySize) : undefined;
+
+    // "Mi talla": si el cliente ya eligió la suya, la dejamos preseleccionada (si hay stock).
+    // Se repite cuando cambia su talla o el color que está mirando.
+    useEffect(() => {
+        const match = product.variants.find((variant) => variant.color_name === colorName && variant.size === mySize && variant.stock > 0);
+
+        setSelectedId(match?.id ?? null);
+    }, [mySize, colorName]);
 
     return (
-        <article className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+        <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
             {/* ---------- FOTO + ETIQUETAS ---------- */}
-            <div className="relative aspect-[4/5] bg-zinc-100">
-                <img src={product.image_url} alt={product.name} loading="lazy" className="size-full object-contain" />
+            <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100">
+                {/* Zoom suave al pasar el mouse por la tarjeta. */}
+                <img
+                    src={product.image_url}
+                    alt={product.name}
+                    loading="lazy"
+                    className="size-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                />
 
                 {/* Etiquetas sobre la foto. `condición && <algo/>` = "muestra esto solo si la condición es verdadera". */}
                 <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
@@ -57,7 +76,7 @@ export default function ProductCard({ product }: { product: Product }) {
                     {/* Aviso de poco stock: solo si hay talla elegida y quedan 1 o 2. */}
                     {selected && selected.stock > 0 && selected.stock <= 2 && (
                         <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
-                            🔥 ¡Últimas {selected.stock === 1 ? 'unidad' : `${selected.stock} unidades`}!
+                            🔥 ¡{selected.stock === 1 ? 'Última unidad' : `Últimas ${selected.stock} unidades`}!
                         </span>
                     )}
                 </div>
@@ -74,7 +93,7 @@ export default function ProductCard({ product }: { product: Product }) {
                     <p className="text-xs text-zinc-500">{product.category}</p>
                     <h3 className="text-sm leading-tight font-semibold">{product.name}</h3>
                     {/* format() decide si se ve en $ o en Bs. según la moneda elegida arriba. */}
-                    <p className="font-display mt-1 text-lg font-bold">{format(product.price_usd)}</p>
+                    <Price usd={product.price_usd} className="font-display mt-1 block text-lg font-bold" />
                     {/* Abre la ventana con descripción y guía de tallas. */}
                     <button type="button" onClick={() => setDetailOpen(true)} className="mt-1 text-xs text-zinc-500 underline">
                         Ver detalles
@@ -136,6 +155,19 @@ export default function ProductCard({ product }: { product: Product }) {
                         );
                     })}
                 </div>
+
+                {/* Aviso de "Mi talla": dice si TU talla está disponible, casi agotada o agotada. */}
+                {mySize && (
+                    <p className={`text-xs ${mineVariant && mineVariant.stock > 0 ? 'text-emerald-600' : 'text-amber-800'}`}>
+                        {mineVariant
+                            ? mineVariant.stock === 0
+                                ? `Tu talla (${mySize}) se agotó`
+                                : mineVariant.stock <= 2
+                                  ? `Tu talla (${mySize}): quedan ${mineVariant.stock}`
+                                  : `Tu talla (${mySize}) disponible`
+                            : `No hay tu talla (${mySize})`}
+                    </p>
+                )}
 
                 {/* ---------- BOTÓN AGREGAR ---------- */}
                 <button

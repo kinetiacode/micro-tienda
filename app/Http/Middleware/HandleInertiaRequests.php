@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -37,7 +38,9 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            // Nombre de la tienda para todas las páginas (tienda, seguimiento del pedido, ticket).
+            // El nombre se guarda en la base de datos (se cambia desde el modo dueño); config es el respaldo.
+            'storeName' => Setting::query()->value('store_name') ?: config('store.name'),
         ];
     }
 }

@@ -3,17 +3,24 @@
  * Contiene: logo, buscador, interruptor $/Bs. y botón del carrito.
  * Todo lo que cambia aquí se escribe en el cuaderno (useStore) para que los demás se enteren.
  */
+import ThemeToggle from '@/Components/ThemeToggle';
 import { useStore } from '@/Context/StoreContext';
+import { useStoreName } from '@/lib/brand';
 
 export default function StickyHeader() {
     // Sacamos del cuaderno solo lo que esta barra necesita.
     const { search, setSearch, currency, setCurrency, cartCount, setCartOpen, settings } = useStore();
+    const name = useStoreName();
 
     return (
         // sticky + top-0 = se pega arriba. z-30 = se dibuja por encima del resto.
         <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white shadow-sm">
-            <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-                <span className="font-display text-xl font-extrabold tracking-tight">KINETIA</span>
+            <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:gap-3">
+                {/* En pantallas pequeñas solo se muestra la "K" para dejar espacio al buscador. */}
+                <span className="font-display max-w-[9rem] min-w-0 truncate text-xl font-extrabold tracking-tight">
+                    <span className="sm:hidden">{name.charAt(0).toUpperCase()}</span>
+                    <span className="hidden sm:inline">{name.toUpperCase()}</span>
+                </span>
 
                 <div className="relative min-w-0 flex-1">
                     {/* Input "controlado": su valor viene de React (search) y cada tecla lo actualiza. */}
@@ -51,6 +58,9 @@ export default function StickyHeader() {
                     ))}
                 </div>
 
+                {/* Cambio de tema claro / oscuro. */}
+                <ThemeToggle />
+
                 {/* Botón del carrito: al tocarlo abre el panel lateral. */}
                 <button
                     type="button"
@@ -65,7 +75,7 @@ export default function StickyHeader() {
                     </svg>
                     {/* El circulito verde con el número solo aparece si hay algo en el carrito. */}
                     {cartCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-bold">
+                        <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-bold text-on-accent">
                             {cartCount}
                         </span>
                     )}

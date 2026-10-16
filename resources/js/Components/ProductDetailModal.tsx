@@ -3,7 +3,8 @@
  * Se abre desde el botón "Ver detalles" de ProductCard. Se cierra con la X, tocando el fondo o con Escape.
  */
 import { useEffect } from 'react';
-import { useStore } from '@/Context/StoreContext';
+import { createPortal } from 'react-dom';
+import Price from '@/Components/Price';
 import type { Product } from '@/Types/store';
 
 /** Una guía de tallas: títulos de columnas, filas con los valores y una nota al pie. */
@@ -66,8 +67,6 @@ interface Props {
 }
 
 export default function ProductDetailModal({ product, onClose }: Props) {
-    const { format } = useStore();
-
     // Escucha la tecla Escape mientras el modal esté abierto.
     useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
@@ -85,9 +84,11 @@ export default function ProductDetailModal({ product, onClose }: Props) {
     // La guía de ESTA categoría (o undefined si no tiene).
     const guide = SIZE_GUIDES[product.category];
 
-    return (
+    // createPortal dibuja el modal directamente en <body>, fuera de la tarjeta. Así no lo afectan
+    // la animación de aparición ni el recorte (overflow) de la tarjeta que lo abre.
+    return createPortal(
         // Fondo oscuro que ocupa toda la pantalla. Tocarlo cierra el modal.
-        <div onClick={onClose} className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/60 p-0 sm:items-center sm:p-4">
+        <div onClick={onClose} className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
             {/* stopPropagation evita que un clic DENTRO de la ventana cierre el modal. */}
             <div
                 role="dialog"
@@ -112,7 +113,7 @@ export default function ProductDetailModal({ product, onClose }: Props) {
                     <div>
                         <p className="text-xs text-zinc-500">{product.category}</p>
                         <h2 className="font-display text-xl font-bold">{product.name}</h2>
-                        <p className="font-display mt-1 text-2xl font-extrabold">{format(product.price_usd)}</p>
+                        <Price usd={product.price_usd} className="font-display mt-1 block text-2xl font-extrabold" />
                     </div>
 
                     {/* La descripción puede ser null (vacía) en la base de datos, por eso se comprueba. */}
@@ -155,6 +156,7 @@ export default function ProductDetailModal({ product, onClose }: Props) {
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }

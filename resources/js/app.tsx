@@ -21,7 +21,8 @@ const pages = import.meta.glob('./Pages/**/*.tsx', { eager: true });
 
 createInertiaApp({
     // Cómo se arma el título de la pestaña del navegador.
-    title: (title) => (title ? `${title} - KINETIA` : 'KINETIA Streetwear'),
+    // Cada página arma su título completo con el nombre de la tienda (que se puede cambiar desde el modo dueño).
+    title: (title) => title,
 
     // Laravel dice "muestra la página 'Storefront'" (Inertia::render('Storefront')).
     // Esta función recibe ese nombre y busca el archivo correspondiente en `pages`.

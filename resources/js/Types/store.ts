@@ -9,7 +9,7 @@
 export type Currency = 'USD' | 'BS';
 
 export type DeliveryType = 'pickup' | 'delivery';
-export type PaymentMethod = 'pago_movil' | 'zelle' | 'efectivo';
+export type PaymentMethod = 'pago_movil' | 'zelle' | 'binance' | 'efectivo';
 
 /** Una talla de un producto, con su color y cuántas unidades quedan. (tabla product_variants) */
 export interface ProductVariant {
@@ -36,6 +36,9 @@ export interface Product {
 /** Configuración de la tienda (tabla settings). */
 export interface StoreSettings {
     exchange_rate_bs: number; // cuántos bolívares vale 1 dólar
+    previous_exchange_rate_bs: number | null; // tasa anterior (para la flecha de subió/bajó)
+    exchange_rate_source: string | null; // "BCV" o "Manual (demo)"
+    exchange_rate_updated_at: string | null; // fecha ISO de la tasa
     free_shipping_threshold_usd: number; // compra mínima para delivery gratis
     flat_shipping_cost_usd: number; // costo del delivery si no llega a la meta
 }
@@ -69,8 +72,36 @@ export interface CheckoutForm {
     payment_method: PaymentMethod;
 }
 
+/** Estados de un pedido, en orden de avance. "cancelled" es terminal. */
+export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+
+/** Una línea del ticket (producto + talla + cantidad). */
+export interface TicketItem {
+    name: string;
+    size: string;
+    color_name: string;
+    quantity: number;
+    unit_price_usd: number;
+}
+
+/** Pedido tal como lo muestra el ticket y el seguimiento (sin teléfono ni dirección, por privacidad). */
+export interface TicketOrder {
+    order_number: string; // KIN-XXXXXX
+    status: OrderStatus;
+    customer_first_name: string;
+    delivery_type: DeliveryType;
+    payment_method: PaymentMethod;
+    subtotal_usd: number;
+    shipping_usd: number;
+    total_usd: number;
+    exchange_rate_snapshot: number; // tasa que se usó al crear el pedido
+    created_at: string; // fecha ISO
+    items: TicketItem[];
+}
+
 /** Lo que responde Laravel cuando el pedido se guarda bien. */
 export interface OrderResponse {
-    order_number: string;
+    order: TicketOrder;
+    tracking_url: string; // enlace público de seguimiento (el que lleva el QR)
     whatsapp_url: string; // enlace de WhatsApp con el resumen del pedido
 }

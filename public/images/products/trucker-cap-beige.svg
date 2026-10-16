@@ -11,7 +11,7 @@
     <path d="M170 420 Q165 230 300 215 Q435 230 430 420 Q300 396 170 420 Z" fill="url(#mesh)"/>
     <path d="M192 412 Q188 246 300 230 Q412 246 408 412 Q300 394 192 412 Z" fill="url(#g)" stroke="#A8956F" stroke-width="3"/>
     <rect x="256" y="292" width="88" height="54" rx="6" fill="#18181B"/>
-    <text x="300" y="327" text-anchor="middle" font-size="19" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="2" fill="#fff">KINETIA</text>
+    <text x="300" y="327" text-anchor="middle" font-size="19" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="2" fill="#fff">JADE</text>
     <circle cx="300" cy="219" r="8" fill="#A8956F"/>
     <path d="M150 418 Q300 384 450 418 Q500 442 470 472 Q300 522 130 472 Q100 442 150 418 Z" fill="#A8956F"/>
     <path d="M165 430 Q300 400 435 430" fill="none" stroke="#EADFC8" stroke-width="3" opacity=".35"/>

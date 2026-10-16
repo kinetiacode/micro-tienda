@@ -12,6 +12,6 @@
     <path d="M200 528 H400" stroke="#101012" stroke-width="3" opacity=".45"/>
     <path d="M245 330 Q256 450 240 518" fill="none" stroke="#101012" stroke-width="3" opacity=".25"/>
     <path d="M355 330 Q344 450 360 518" fill="none" stroke="#101012" stroke-width="3" opacity=".25"/>
-    <text x="338" y="262" text-anchor="middle" font-size="16" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="3" fill="#fff" opacity=".9">KINETIA</text>
+    <text x="338" y="262" text-anchor="middle" font-size="16" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="3" fill="#fff" opacity=".9">JADE</text>
   </g>
 </svg>

@@ -2,7 +2,7 @@
  * STORECONTEXT: EL "CUADERNO COMPARTIDO"
  * --------------------------------------
  * Guarda los datos que muchos bloques necesitan a la vez:
- * productos, moneda, buscador, categoría y carrito.
+ * productos, moneda, buscador, categoría, carrito y "Mi talla".
  *
  * Cómo se usa en cualquier componente:
  *     const { currency, cart, addToCart } = useStore();
@@ -11,6 +11,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { formatPrice } from '@/lib/format';
+import { productSizeGroup, type SizeGroup } from '@/lib/sizes';
 import type { CartItem, Currency, Product, ProductVariant, StoreInfo, StoreSettings } from '@/Types/store';
 
 /** Lista de todo lo que el cuaderno ofrece (datos y funciones para cambiarlos). */
@@ -25,6 +26,12 @@ interface StoreContextValue {
     setSearch: (value: string) => void;
     category: string;
     setCategory: (value: string) => void;
+    mySizes: Partial<Record<SizeGroup, string>>; // tallas elegidas en "Mi talla" (ropa y/o calzado)
+    setMySize: (group: SizeGroup, size: string | null) => void;
+    onlyMySize: boolean; // ¿mostrar solo lo que hay en mi talla?
+    setOnlyMySize: (value: boolean) => void;
+    mySizeFor: (product: Product) => string | null; // la talla elegida que corresponde a ESTE producto
+    fitsMySize: (product: Product) => boolean; // ¿este producto pasa el filtro "Solo mi talla"?
     cart: CartItem[];
     cartCount: number; // total de unidades (el numerito rojo del carrito)
     subtotalUsd: number; // suma de precios, sin envío
@@ -42,6 +49,13 @@ const StoreContext = createContext<StoreContextValue | null>(null);
 // Nombres con los que guardamos cosas en el navegador (localStorage).
 const CART_KEY = 'kinetia_cart';
 const CURRENCY_KEY = 'kinetia_currency';
+const SIZES_KEY = 'kinetia_sizes';
+
+/** Lo que recordamos de "Mi talla". */
+interface SizePrefs {
+    sizes: Partial<Record<SizeGroup, string>>;
+    only: boolean;
+}
 
 /** Lee algo guardado en el navegador. Si no existe o falla, devuelve el valor de respaldo. */
 const readStorage = <T,>(key: string, fallback: T): T => {
@@ -65,36 +79,57 @@ interface ProviderProps {
 /** Componente que "abre el cuaderno" y lo comparte con todos sus hijos. */
 export function StoreProvider({ products, settings, info, children }: ProviderProps) {
     // useState = memoria. Cada línea: [valor, función para cambiarlo] = useState(valorInicial)
-    const [currency, setCurrency] = useState<Currency>('USD');
+    // Moneda, carrito y "Mi talla" arrancan con lo guardado en la visita anterior (la función inicial
+    // se ejecuta una sola vez). Así los precios no "cuentan" de $ a Bs. al cargar la página.
+    const [currency, setCurrency] = useState<Currency>(() => readStorage<Currency>(CURRENCY_KEY, 'USD'));
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('Todos');
     // "rawCart" es el carrito tal cual se guardó; más abajo se convierte en `cart` ya corregido.
-    const [rawCart, setRawCart] = useState<CartItem[]>([]);
+    const [rawCart, setRawCart] = useState<CartItem[]>(() => readStorage<CartItem[]>(CART_KEY, []));
+    const [sizePrefs, setSizePrefs] = useState<SizePrefs>(() => readStorage<SizePrefs>(SIZES_KEY, { sizes: {}, only: false }));
     const [isCartOpen, setCartOpen] = useState(false);
-    // Para no guardar el carrito vacío antes de haber leído el que ya existía.
-    const [hydrated, setHydrated] = useState(false);
 
-    // useEffect con [] al final = "ejecútate UNA sola vez, cuando la página carga".
-    // Aquí recuperamos el carrito y la moneda guardados en la visita anterior.
+    // Este vigilante se ejecuta cada vez que cambia algo guardable: lo guarda en el navegador.
     useEffect(() => {
-        setRawCart(readStorage<CartItem[]>(CART_KEY, []));
-        setCurrency(readStorage<Currency>(CURRENCY_KEY, 'USD'));
-        setHydrated(true);
-    }, []);
-
-    // Este vigilante se ejecuta cada vez que cambia el carrito o la moneda: los guarda en el navegador.
-    useEffect(() => {
-        if (!hydrated) {
-            return;
-        }
-
         try {
             localStorage.setItem(CART_KEY, JSON.stringify(rawCart));
             localStorage.setItem(CURRENCY_KEY, JSON.stringify(currency));
+            localStorage.setItem(SIZES_KEY, JSON.stringify(sizePrefs));
         } catch {
-            // localStorage no disponible (modo privado): el carrito vive solo en memoria.
+            // localStorage no disponible (modo privado): todo vive solo en memoria.
         }
-    }, [rawCart, currency, hydrated]);
+    }, [rawCart, currency, sizePrefs]);
+
+    // Elegir (o quitar con null) la talla de un grupo: ropa o calzado.
+    const setMySize = useCallback((group: SizeGroup, size: string | null) => {
+        setSizePrefs((current) => ({ ...current, sizes: { ...current.sizes, [group]: size ?? undefined } }));
+    }, []);
+
+    const setOnlyMySize = useCallback((only: boolean) => setSizePrefs((current) => ({ ...current, only })), []);
+
+    // La talla elegida que aplica a un producto (null si es talla única o no eligió talla de ese grupo).
+    const mySizeFor = useCallback(
+        (product: Product): string | null => {
+            const group = productSizeGroup(product);
+
+            return group ? (sizePrefs.sizes[group] ?? null) : null;
+        },
+        [sizePrefs.sizes],
+    );
+
+    // Con "Solo mi talla" activo, un producto solo pasa si tiene stock en la talla elegida.
+    const fitsMySize = useCallback(
+        (product: Product): boolean => {
+            const mine = mySizeFor(product);
+
+            if (!sizePrefs.only || !mine) {
+                return true;
+            }
+
+            return product.variants.some((variant) => variant.size === mine && variant.stock > 0);
+        },
+        [mySizeFor, sizePrefs.only],
+    );
 
     /**
      * El carrito "corregido": compara cada item con el catálogo ACTUAL.
@@ -188,6 +223,12 @@ export function StoreProvider({ products, settings, info, children }: ProviderPr
             setSearch,
             category,
             setCategory,
+            mySizes: sizePrefs.sizes,
+            setMySize,
+            onlyMySize: sizePrefs.only,
+            setOnlyMySize,
+            mySizeFor,
+            fitsMySize,
             cart,
             // reduce = recorrer la lista acumulando un total.
             cartCount: cart.reduce((sum, item) => sum + item.quantity, 0),
@@ -199,7 +240,25 @@ export function StoreProvider({ products, settings, info, children }: ProviderPr
             isCartOpen,
             setCartOpen,
         }),
-        [products, settings, info, currency, search, category, cart, addToCart, setQuantity, removeFromCart, clearCart, isCartOpen],
+        [
+            products,
+            settings,
+            info,
+            currency,
+            search,
+            category,
+            sizePrefs,
+            setMySize,
+            setOnlyMySize,
+            mySizeFor,
+            fitsMySize,
+            cart,
+            addToCart,
+            setQuantity,
+            removeFromCart,
+            clearCart,
+            isCartOpen,
+        ],
     );
 
     // Entrega el paquete a todos los hijos.

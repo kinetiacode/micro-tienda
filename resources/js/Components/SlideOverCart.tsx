@@ -8,6 +8,10 @@
  */
 import { router } from '@inertiajs/react';
 import { useEffect, useState, type FormEvent } from 'react';
+import PaymentInstructions from '@/Components/PaymentInstructions';
+import Price from '@/Components/Price';
+import RateBadge from '@/Components/RateBadge';
+import Ticket from '@/Components/Ticket';
 import { useStore } from '@/Context/StoreContext';
 import { PAYMENT_DETAILS, calculateShippingProgress, formatPrice } from '@/lib/format';
 import type { CheckoutForm, OrderResponse } from '@/Types/store';
@@ -40,7 +44,6 @@ export default function SlideOverCart() {
     const [form, setForm] = useState<CheckoutForm>(emptyForm); // datos del formulario
     const [submitting, setSubmitting] = useState(false); // ¿se está enviando el pedido?
     const [error, setError] = useState<string | null>(null); // mensaje de error, si hay
-    const [copied, setCopied] = useState<string | null>(null); // qué dato se acaba de copiar
     const [confirmation, setConfirmation] = useState<OrderResponse | null>(null); // respuesta del pedido
 
     // ---- Cálculos de envío y totales ----
@@ -49,23 +52,10 @@ export default function SlideOverCart() {
     // Se cobra envío solo si es delivery Y todavía no llegó a la meta de envío gratis.
     const shippingUsd = isDelivery && !progress.isFree ? settings.flat_shipping_cost_usd : 0;
     const totalUsd = subtotalUsd + shippingUsd;
-    // Datos de pago del método elegido (banco, teléfono, etc.).
-    const payment = PAYMENT_DETAILS[form.payment_method];
 
     // Cambia UN campo del formulario sin perder los demás.
     // `<K extends keyof CheckoutForm>` solo asegura que el valor corresponda al campo.
     const update = <K extends keyof CheckoutForm>(key: K, value: CheckoutForm[K]) => setForm((current) => ({ ...current, [key]: value }));
-
-    // Copia un texto al portapapeles y muestra "¡Copiado!" por 1.5 segundos.
-    const copy = async (value: string) => {
-        try {
-            await navigator.clipboard.writeText(value);
-            setCopied(value);
-            setTimeout(() => setCopied(null), 1500);
-        } catch {
-            setError('No se pudo copiar al portapapeles.');
-        }
-    };
 
     // Se ejecuta al enviar el formulario ("Finalizar pedido").
     const submit = async (event: FormEvent) => {
@@ -148,7 +138,7 @@ export default function SlideOverCart() {
             <div
                 onClick={close}
                 aria-hidden
-                className={`fixed inset-0 z-40 bg-zinc-950/50 transition-opacity ${isCartOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+                className={`fixed inset-0 z-40 bg-black/50 transition-opacity ${isCartOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
             />
 
             {/* El panel. translate-x-full lo esconde a la derecha; translate-x-0 lo desliza a la vista. */}
@@ -171,12 +161,20 @@ export default function SlideOverCart() {
                 {/* El contenido depende de la situación (3 casos, uno dentro del otro):
                     1) pedido confirmado  2) carrito vacío  3) carrito con productos */}
                 {confirmation ? (
-                    // ---- CASO 1: pedido confirmado ----
-                    <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-                        <p className="text-5xl">✅</p>
-                        <h3 className="font-display text-xl font-bold">¡Pedido {confirmation.order_number} registrado!</h3>
-                        <p className="text-sm text-zinc-600">Se abrió WhatsApp con el resumen. Envíalo para confirmar tu pedido y el pago.</p>
-                        <a href={confirmation.whatsapp_url} target="_blank" rel="noopener" className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white">
+                    // ---- CASO 1: pedido confirmado: ticket digital con código y QR ----
+                    <div className="flex-1 space-y-4 overflow-y-auto p-4">
+                        <div className="text-center">
+                            <h3 className="font-display text-xl font-bold">¡Pedido registrado!</h3>
+                            <p className="mt-1 text-sm text-zinc-600">Se abrió WhatsApp con el resumen. Envíalo para confirmar tu pedido y el pago.</p>
+                        </div>
+                        {/* notchClass = color de las muescas del ticket: igual al fondo del panel. */}
+                        <Ticket order={confirmation.order} trackingUrl={confirmation.tracking_url} notchClass="bg-white" />
+                        <a
+                            href={confirmation.whatsapp_url}
+                            target="_blank"
+                            rel="noopener"
+                            className="block rounded-xl bg-emerald-600 px-5 py-2.5 text-center text-sm font-semibold text-on-accent"
+                        >
                             Abrir WhatsApp de nuevo
                         </a>
                     </div>
@@ -188,15 +186,25 @@ export default function SlideOverCart() {
                     <form onSubmit={submit} className="flex flex-1 flex-col overflow-y-auto">
                         {/* Barra de progreso de delivery gratis */}
                         <div className="border-b border-zinc-200 p-4">
-                            <p className={`mb-2 text-sm font-medium ${progress.isFree ? 'text-emerald-600' : 'text-zinc-700'}`}>
-                                {progress.isFree
-                                    ? '🎉 ¡Felicidades! Tienes Delivery Gratis en este pedido'
-                                    : `Te faltan ${format(progress.remaining)} para delivery gratis`}
+                            <p className={`mb-2 flex items-center gap-1.5 text-sm font-medium ${progress.isFree ? 'text-emerald-600' : 'text-zinc-700'}`}>
+                                {progress.isFree ? (
+                                    <>
+                                        {/* Marca de verificación que aparece con un pequeño "rebote" al lograr la meta. */}
+                                        <svg viewBox="0 0 24 24" className="animate-pop size-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <path d="m8 12.5 3 3 5-6" />
+                                        </svg>
+                                        Delivery gratis desbloqueado
+                                    </>
+                                ) : (
+                                    `Te faltan ${format(progress.remaining)} para delivery gratis`
+                                )}
                             </p>
                             <div className="h-2.5 overflow-hidden rounded-full bg-zinc-100">
-                                {/* El ancho se cambia con el porcentaje; transition-all lo anima suavemente. */}
+                                {/* El ancho se cambia con el porcentaje; transition-all lo anima suavemente.
+                                    Al completarse, bar-shine hace pasar un brillo suave por la barra. */}
                                 <div
-                                    className={`h-full rounded-full transition-all duration-500 ${progress.isFree ? 'bg-emerald-600' : 'bg-emerald-400'}`}
+                                    className={`relative h-full overflow-hidden rounded-full transition-all duration-500 ${progress.isFree ? 'bar-shine bg-emerald-600' : 'bg-emerald-400'}`}
                                     style={{ width: `${progress.percentage}%` }}
                                 />
                             </div>
@@ -234,7 +242,7 @@ export default function SlideOverCart() {
                                         </div>
                                     </div>
                                     {/* Precio de la línea = precio unitario x cantidad */}
-                                    <p className="font-display text-sm font-bold">{format(item.priceUsd * item.quantity)}</p>
+                                    <Price usd={item.priceUsd * item.quantity} className="font-display text-sm font-bold" />
                                 </li>
                             ))}
                         </ul>
@@ -273,29 +281,15 @@ export default function SlideOverCart() {
                                 ))}
                             </select>
 
-                            {/* Datos bancarios con botón "Copiar" (no aplica a efectivo). */}
-                            <dl className="space-y-1 rounded-lg bg-zinc-50 p-3 text-sm">
-                                {payment.lines.map((line) => (
-                                    <div key={line.label} className="flex items-center justify-between gap-2">
-                                        <dt className="text-zinc-500">{line.label}</dt>
-                                        <dd className="flex items-center gap-2 font-medium">
-                                            {line.value}
-                                            {form.payment_method !== 'efectivo' && (
-                                                <button type="button" onClick={() => copy(line.value)} className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-xs">
-                                                    {copied === line.value ? '¡Copiado!' : 'Copiar'}
-                                                </button>
-                                            )}
-                                        </dd>
-                                    </div>
-                                ))}
-                            </dl>
+                            {/* Datos para pagar con el monto exacto. Pago Móvil se copia con un solo botón. */}
+                            <PaymentInstructions method={form.payment_method} totalUsd={totalUsd} />
                         </div>
 
                         {/* Totales y botón final (mt-auto lo empuja al fondo del panel) */}
                         <div className="mt-auto space-y-1 border-t border-zinc-200 bg-white p-4">
                             <div className="flex justify-between text-sm text-zinc-600">
                                 <span>Subtotal</span>
-                                <span>{format(subtotalUsd)}</span>
+                                <Price usd={subtotalUsd} />
                             </div>
                             <div className="flex justify-between text-sm text-zinc-600">
                                 <span>Envío</span>
@@ -307,7 +301,10 @@ export default function SlideOverCart() {
                                 <span className="font-display text-2xl font-extrabold">{formatPrice(totalUsd, 'USD', settings.exchange_rate_bs)}</span>
                             </div>
                             {/* ...y debajo, pequeño, su equivalente en Bs. con la tasa del día. */}
-                            <p className="text-right text-xs text-zinc-500">≈ {formatPrice(totalUsd, 'BS', settings.exchange_rate_bs)} (tasa Bs. {settings.exchange_rate_bs.toFixed(2)})</p>
+                            <p className="text-right text-xs text-zinc-500 tabular-nums">≈ {formatPrice(totalUsd, 'BS', settings.exchange_rate_bs)}</p>
+                            <p className="text-right text-xs text-zinc-500">
+                                <RateBadge compact />
+                            </p>
 
                             {/* Mensaje de error (solo si existe). */}
                             {error && (
@@ -317,7 +314,7 @@ export default function SlideOverCart() {
                             )}
 
                             {/* type="submit" dispara el onSubmit del form. Se apaga mientras se envía. */}
-                            <button type="submit" disabled={submitting} className="mt-2 w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white disabled:opacity-60">
+                            <button type="submit" disabled={submitting} className="mt-2 w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-on-accent disabled:opacity-60">
                                 {submitting ? 'Procesando...' : 'Finalizar pedido por WhatsApp'}
                             </button>
                         </div>

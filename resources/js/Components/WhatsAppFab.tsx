@@ -4,11 +4,13 @@
  * "FAB" = Floating Action Button (botón de acción flotante).
  */
 import { useStore } from '@/Context/StoreContext';
+import { useStoreName } from '@/lib/brand';
 
 export default function WhatsAppFab() {
     const { info } = useStore();
+    const name = useStoreName();
 
-    const url = `https://wa.me/${info.whatsapp_number}?text=${encodeURIComponent('Hola Kinetia, tengo una consulta 👋')}`;
+    const url = `https://wa.me/${info.whatsapp_number}?text=${encodeURIComponent(`Hola ${name}, tengo una consulta 👋`)}`;
 
     return (
         <a
@@ -16,7 +18,7 @@ export default function WhatsAppFab() {
             target="_blank"
             rel="noopener"
             aria-label="Escribir por WhatsApp"
-            className="fixed right-4 bottom-4 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg"
+            className="fixed right-4 bottom-4 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-on-accent shadow-lg"
         >
             {/* Dibujo de una burbuja de chat con un teléfono. */}
             <svg viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

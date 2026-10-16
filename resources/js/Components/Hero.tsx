@@ -4,6 +4,8 @@
  * Las ventajas (delivery, pagos, stock) van en una franja discreta debajo, sin recuadros.
  * El botón "Ver colección" baja suavemente hasta el catálogo (id="catalogo").
  */
+import Price from '@/Components/Price';
+import RateBadge from '@/Components/RateBadge';
 import { useStore } from '@/Context/StoreContext';
 
 // Inclinación de cada tarjeta del collage (la del medio va derecha y más abajo).
@@ -43,9 +45,10 @@ export default function Hero() {
                             >
                                 <img src={product.image_url} alt={product.name} className="aspect-[4/5] w-full object-cover" />
                                 {/* Etiqueta con el precio, abajo a la izquierda de la foto. */}
-                                <span className="font-display absolute bottom-2 left-2 rounded-full bg-white px-2.5 py-1 text-xs font-bold shadow">
-                                    {format(product.price_usd)}
-                                </span>
+                                <Price
+                                    usd={product.price_usd}
+                                    className="font-display absolute bottom-2 left-2 rounded-full bg-white px-2.5 py-1 text-xs font-bold shadow"
+                                />
                             </a>
                         ))}
                     </div>
@@ -59,7 +62,8 @@ export default function Hero() {
                     <span aria-hidden className="hidden text-zinc-300 sm:inline">
                         •
                     </span>
-                    <span>Paga en $ o Bs.</span>
+                    {/* Tasa del día (BCV) con flecha de subió/bajó; se actualiza sola cada hora. */}
+                    <RateBadge />
                     <span aria-hidden className="hidden text-zinc-300 sm:inline">
                         •
                     </span>

@@ -13,6 +13,6 @@
     <path d="M140 368 Q140 330 178 330 H422 Q460 330 460 368 V424 Q300 474 140 424 Z" fill="#454550" opacity=".5" stroke="#101012" stroke-width="3"/>
     <path d="M168 522 H432" stroke="#101012" stroke-width="5" stroke-dasharray="5 4"/>
     <rect x="282" y="442" width="36" height="34" rx="6" fill="#A1A1AA" stroke="#52525B" stroke-width="3"/>
-    <text x="300" y="560" text-anchor="middle" font-size="18" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="4" fill="#fff" opacity=".85">KINETIA</text>
+    <text x="300" y="560" text-anchor="middle" font-size="18" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="4" fill="#fff" opacity=".85">JADE</text>
   </g>
 </svg>
